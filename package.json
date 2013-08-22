@@ -1,0 +1,34 @@
+{
+    "name": "osmium",
+    "description": "osmium, a fast and flexible library for working with OpenStreetMap data",
+    "url": "https://github.com/springmeyer/node-osmium",
+    "homepage": "http://en.wikipedia.org/wiki/Osmium",
+    "author": "Dane Springmeyer <springmeyer>",
+    "version": "1.0.0",
+    "main": "./lib/osmium.js",
+    "bugs": {
+        "email": "dane@mapbox.com",
+        "url": "https://github.com/springmeyer/node-osmium/issues"
+    },
+    "keywords": [
+        "osm"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/springmeyer/node-osmium.git"
+    },
+    "licenses": [
+        {
+            "type": "Boost"
+        }
+    ],
+    "devDependencies": {
+        "mocha": "*"
+    },
+    "engines": {
+        "node": ">= 0.6.13 < 0.11.0"
+    },
+    "scripts": {
+        "test": "mocha -R spec"
+    }
+}
