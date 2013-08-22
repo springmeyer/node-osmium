@@ -17,7 +17,6 @@ describe('osmium', function() {
         var buffer;
         while (buffer = reader.next()) {
             var dump_string = buffer.dump();
-            delete buffer;
         }
         
         done();
