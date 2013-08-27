@@ -8,6 +8,7 @@
       ],
       'include_dirs': [
           '../include/',
+          '../libosmium/include/',
           './src/'
       ],
       'defines': [

@@ -54,7 +54,6 @@ Buffer::Buffer(reader_ptr reader)
 
 Buffer::~Buffer()
 {
-    if (buf) delete[] buf.data();
 }
 
 Handle<Value> Buffer::New(Arguments const& args)
@@ -93,7 +92,7 @@ public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(Arguments const& args);
-    static Handle<Value> meta(Arguments const& args);
+    static Handle<Value> header(Arguments const& args);
     static Handle<Value> next(Arguments const& args);
     Reader(std::string const& infile);
     void _ref() { Ref(); }
@@ -102,7 +101,7 @@ public:
 private:
     ~Reader();
     reader_ptr this_;
-    osmium::io::Meta meta_;
+    osmium::io::Header header_;
 };
 
 Persistent<FunctionTemplate> Reader::constructor;
@@ -112,7 +111,7 @@ void Reader::Initialize(Handle<Object> target) {
     constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(Reader::New));
     constructor->InstanceTemplate()->SetInternalFieldCount(1);
     constructor->SetClassName(String::NewSymbol("Reader"));
-    NODE_SET_PROTOTYPE_METHOD(constructor, "meta", meta);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "header", header);
     NODE_SET_PROTOTYPE_METHOD(constructor, "next", next);
     target->Set(String::NewSymbol("Reader"),constructor->GetFunction());
 }
@@ -120,7 +119,7 @@ void Reader::Initialize(Handle<Object> target) {
 Reader::Reader(std::string const& infile)
   : ObjectWrap(),
     this_(std::make_shared<osmium::io::Reader>(infile)),
-    meta_(this_->open()) { }
+    header_(this_->open()) { }
 
 Reader::~Reader() { }
 
@@ -148,14 +147,14 @@ Handle<Value> Reader::New(Arguments const& args)
 }
 
 
-Handle<Value> Reader::meta(Arguments const& args)
+Handle<Value> Reader::header(Arguments const& args)
 {
     HandleScope scope;
     Local<Object> obj = Object::New();
     Reader* reader = node::ObjectWrap::Unwrap<Reader>(args.This());
-    osmium::io::Meta const& meta = reader->meta_;
-    obj->Set(String::NewSymbol("generator"),String::New(meta.generator().c_str()));
-    osmium::Bounds const& bounds = meta.bounds();
+    osmium::io::Header const& header = reader->header_;
+    obj->Set(String::NewSymbol("generator"),String::New(header.generator().c_str()));
+    osmium::Bounds const& bounds = header.bounds();
     Local<Array> arr = Array::New(4);
     arr->Set(0,Number::New(bounds.bottom_left().lon()));
     arr->Set(1,Number::New(bounds.bottom_left().lat()));
@@ -183,6 +182,6 @@ extern "C" {
     }
 }
 
-} // namespace node_osrm
+} // namespace node_osmium
 
 NODE_MODULE(osmium, node_osmium::start)
