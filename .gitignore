@@ -1,5 +1,6 @@
 .DS_Store
 build
-lib/_osrm.node
+lib/osmium.node
 node_modules
 berlin-latest.osm.pbf
+.*.swp
