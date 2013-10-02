@@ -25,7 +25,6 @@ describe('osmium', function() {
         handler.on('done',function(node) {
             done();
         });
-        //done();
         var reader = new osmium.Reader("winthrop.osm");
         reader.apply(handler);
     });
