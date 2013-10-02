@@ -13,17 +13,21 @@ describe('osmium', function() {
         assert.ok(Math.abs(bounds[1] - expected[1]) < .000000001);
         assert.ok(Math.abs(bounds[2] - expected[2]) < .000000001);
         assert.ok(Math.abs(bounds[3] - expected[3]) < .000000001);
-        var buffer;
-        while (buffer = reader.next()) {
-            var dump_string = buffer.dump();
-
-            // workaround to break off loop
-            if (dump_string == "") {
-                break;
-            }
-        }
-
         done();
+    });
+
+    it('should be able to apply a handler to a reader', function(done) {
+        var handler = new osmium.Handler();
+        handler.on('node',function(node) {
+            // TODO - uncommenting leads to odd hang in node_osmium::Reader::~Reader around
+            //console.log('node');
+        });
+        handler.on('done',function(node) {
+            done();
+        });
+        //done();
+        var reader = new osmium.Reader("winthrop.osm");
+        reader.apply(handler);
     });
 
 });
