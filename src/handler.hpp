@@ -74,10 +74,10 @@ JSHandler::JSHandler()
 JSHandler::~JSHandler()
 {
     if (!done_cb.IsEmpty()) {
-        std::clog << "exiting\n";
         done_cb.Dispose();
-    } else {
-        std::clog << "empty done_cb\n";
+    }
+    if (!node_cb.IsEmpty()) {
+        node_cb.Dispose();
     }
 }
 
