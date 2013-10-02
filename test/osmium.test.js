@@ -18,11 +18,12 @@ describe('osmium', function() {
 
     it('should be able to apply a handler to a reader', function(done) {
         var handler = new osmium.Handler();
+        var nodes = 0;
         handler.on('node',function(node) {
-            // TODO - uncommenting leads to odd hang in node_osmium::Reader::~Reader around
-            //console.log('node');
+            ++nodes;
         });
-        handler.on('done',function(node) {
+        handler.on('done',function() {
+            assert.equal(nodes,1525);
             done();
         });
         var reader = new osmium.Reader("winthrop.osm");
