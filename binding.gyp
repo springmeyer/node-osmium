@@ -29,6 +29,7 @@
       'libraries': [
           '-losmpbf',
           '-lprotobuf-lite',
+          '-lexpat'
       ]
     },
     {
