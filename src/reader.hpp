@@ -121,7 +121,7 @@ Handle<Value> Reader::apply(Arguments const& args)
     index_pos_type index_pos;
     index_neg_type index_neg;
     location_handler_type location_handler(index_pos, index_neg);
-    r_ptr->push(location_handler,*handler);
+    r_ptr->apply(location_handler,*handler);
     return Undefined();
 }
 
