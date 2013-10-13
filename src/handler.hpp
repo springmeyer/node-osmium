@@ -114,8 +114,14 @@ Handle<Value> JSHandler::on(Arguments const& args)
     }
     JSHandler * handler = node::ObjectWrap::Unwrap<JSHandler>(args.This());
     if (callback_name == String::NewSymbol("node")) {
+        if (!handler->node_cb.IsEmpty()) {
+            handler->node_cb.Dispose();
+        }
         handler->node_cb = Persistent<Function>::New(callback);
     } else if (callback_name == String::NewSymbol("done")) {
+        if (!handler->done_cb.IsEmpty()) {
+            handler->done_cb.Dispose();
+        }
         handler->done_cb = Persistent<Function>::New(callback);
     }
     return scope.Close(Undefined());
