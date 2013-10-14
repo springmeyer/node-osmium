@@ -16,7 +16,7 @@ berlin-latest.osm.pbf:
 	wget http://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
 
 test: berlin-latest.osm.pbf
-	@PATH="./node_modules/mocha/bin:${PATH}" && NODE_PATH="./lib:$(NODE_PATH)" mocha -R spec
+	@PATH="./node_modules/mocha/bin:${PATH}" && NODE_PATH="./lib:$(NODE_PATH)" mocha -R spec --timeout 10000
 
 check: test
 

@@ -23,11 +23,19 @@ describe('osmium', function() {
             ++nodes;
         });
         handler.on('done',function() {
+            assert.equal(nodes,1943339);
+        });
+        var reader = new osmium.Reader("berlin-latest.osm.pbf");
+        reader.apply(handler);
+
+        // since reader.apply is sync, we can re-use handlers
+        var reader2 = new osmium.Reader('winthrop.osm');
+        nodes = 0;
+        handler.on('done',function() {
             assert.equal(nodes,1525);
             done();
         });
-        var reader = new osmium.Reader("winthrop.osm");
-        reader.apply(handler);
+        reader2.apply(handler);
     });
 
     it('should be able to get node data from handler parameter', function(done) {
