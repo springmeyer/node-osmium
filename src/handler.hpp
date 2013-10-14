@@ -55,14 +55,12 @@ public:
             obj->Set(String::NewSymbol("lat"), Number::New(node.lat()));
 
             {
-                osmium::geom::WKBFactory factory;
-                std::string wkb { factory.create_point(node) };
+                std::string wkb { wkb_factory.create_point(node) };
                 obj->Set(String::NewSymbol("wkb"), node::Buffer::New(wkb.data(), wkb.size())->handle_);
             }
 
             {
-                osmium::geom::WKTFactory factory;
-                std::string wkt { factory.create_point(node) };
+                std::string wkt { wkt_factory.create_point(node) };
                 obj->Set(String::NewSymbol("wkt"), String::New(wkt.c_str()));
             }
 
@@ -100,16 +98,14 @@ public:
             obj->Set(String::NewSymbol("user"), String::New(way.user()));
 
             try {
-                osmium::geom::WKBFactory factory;
-                std::string wkb { factory.create_linestring(way) };
+                std::string wkb { wkb_factory.create_linestring(way) };
                 obj->Set(String::NewSymbol("wkb"), node::Buffer::New(wkb.data(), wkb.size())->handle_);
             } catch (osmium::geom::geometry_error&) {
                 obj->Set(String::NewSymbol("wkb"), Undefined());
             }
 
             try {
-                osmium::geom::WKTFactory factory;
-                std::string wkt { factory.create_linestring(way) };
+                std::string wkt { wkt_factory.create_linestring(way) };
                 obj->Set(String::NewSymbol("wkt"), String::New(wkt.c_str()));
             } catch (osmium::geom::geometry_error&) {
                 obj->Set(String::NewSymbol("wkt"), Undefined());
@@ -201,6 +197,8 @@ public:
     Persistent<Function> done_cb;
 private:
     ~JSHandler();
+    osmium::geom::WKBFactory wkb_factory;
+    osmium::geom::WKTFactory wkt_factory;
 };
 
 Persistent<FunctionTemplate> JSHandler::constructor;
