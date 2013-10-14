@@ -1,5 +1,5 @@
 
-var osmium = require('/home/sqrt/node-osmium/lib/osmium.js');
+var osmium = require('./lib/osmium.js');
 var fs = require('fs');
 
 var stream = fs.createWriteStream("out.opl");
@@ -59,7 +59,8 @@ handler.on('done', function() {
     stream.end();
 });
 
+var reader = new osmium.Reader("winthrop.osm");
 //var reader = new osmium.Reader("berlin-latest.osm.pbf");
-var reader = new osmium.Reader("../bremen.osm.pbf");
+//var reader = new osmium.Reader("../bremen.osm.pbf");
 reader.apply(handler);
 
