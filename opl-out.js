@@ -37,7 +37,7 @@ handler.on('way', function(way) {
     for (var i=0; i < way.nodes.length; i+=1) {
         str += way.nodes[i] + ',';
     }
-    out_buffer += obj2str('w', way) + ' N' + str.substring(0, str.length-1) + ' T' + tags2str(way.tags) + "\n";
+    outbuffer += obj2str('w', way) + ' N' + str.substring(0, str.length-1) + ' T' + tags2str(way.tags) + "\n";
     if (outbuffer.length > 10000) {
         flush_buffer();
     }
