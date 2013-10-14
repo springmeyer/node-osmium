@@ -8,9 +8,7 @@
 #include <node_buffer.h>
 
 // osmium
-#include <osmium/handler/node_locations_for_ways.hpp> // Handler
-#include <osmium/index/map/dummy.hpp>
-#include <osmium/index/map/sparse_table.hpp>
+#include <osmium/handler.hpp>
 #include <osmium/geom/wkb.hpp>
 #include <osmium/geom/wkt.hpp>
 
@@ -21,12 +19,6 @@
 namespace node_osmium {
 
 using namespace v8;
-
-// interfaces
-
-typedef osmium::index::map::Dummy<osmium::unsigned_object_id_type, osmium::Location> index_neg_type;
-typedef osmium::index::map::SparseTable<osmium::unsigned_object_id_type, osmium::Location> index_pos_type;
-typedef osmium::handler::NodeLocationsForWays<index_pos_type, index_neg_type> location_handler_type;
 
 class JSHandler: public node::ObjectWrap , public osmium::handler::Handler<JSHandler> {
 public:
