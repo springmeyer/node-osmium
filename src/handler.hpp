@@ -44,6 +44,7 @@ public:
             Local<Object> obj = Object::New();
             obj->Set(String::NewSymbol("id"), Number::New(node.id()));
             obj->Set(String::NewSymbol("version"), Number::New(node.version()));
+            obj->Set(String::NewSymbol("changeset"), Number::New(node.changeset()));
             obj->Set(String::NewSymbol("timestamp"), Number::New(node.timestamp()));
             std::string iso { node.timestamp().to_iso() };
             obj->Set(String::NewSymbol("timestamp_iso"), String::New(iso.c_str()));
@@ -81,6 +82,7 @@ public:
             Local<Object> obj = Object::New();
             obj->Set(String::NewSymbol("id"), Number::New(way.id()));
             obj->Set(String::NewSymbol("version"), Number::New(way.version()));
+            obj->Set(String::NewSymbol("changeset"), Number::New(way.changeset()));
             obj->Set(String::NewSymbol("timestamp"), Number::New(way.timestamp()));
             std::string iso { way.timestamp().to_iso() };
             obj->Set(String::NewSymbol("timestamp_iso"), String::New(iso.c_str()));
@@ -109,8 +111,54 @@ public:
             }
             obj->Set(String::NewSymbol("tags"), tags);
 
+            Local<Array> nodes = Array::New(way.nodes().size());
+            int i = 0;
+            for (auto& node : way.nodes()) {
+                nodes->Set(i, Number::New(node.ref()));
+                ++i;
+            }
+            obj->Set(String::NewSymbol("nodes"), nodes);
+
             Local<Value> argv[argc] = { obj };
             way_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+        }
+    }
+
+    void relation(const osmium::Relation& relation) {
+        if (!relation_cb.IsEmpty()) {
+            const int argc = 1;
+            Local<Object> obj = Object::New();
+            obj->Set(String::NewSymbol("id"), Number::New(relation.id()));
+            obj->Set(String::NewSymbol("version"), Number::New(relation.version()));
+            obj->Set(String::NewSymbol("changeset"), Number::New(relation.changeset()));
+            obj->Set(String::NewSymbol("timestamp"), Number::New(relation.timestamp()));
+            std::string iso { relation.timestamp().to_iso() };
+            obj->Set(String::NewSymbol("timestamp_iso"), String::New(iso.c_str()));
+            obj->Set(String::NewSymbol("uid"), Number::New(relation.uid()));
+            obj->Set(String::NewSymbol("user"), String::New(relation.user()));
+
+            Local<Object> tags = Object::New();
+            for (auto& tag : relation.tags()) {
+                tags->Set(String::NewSymbol(tag.key()), String::New(tag.value()));
+            }
+            obj->Set(String::NewSymbol("tags"), tags);
+
+            Local<Array> members = Array::New();
+            int i = 0;
+            char typec[2] = " ";
+            for (auto& member : relation.members()) {
+                Local<Object> jsmember = Object::New();
+                typec[0] = osmium::item_type_to_char(member.type());
+                jsmember->Set(String::NewSymbol("type"), String::New(typec));
+                jsmember->Set(String::NewSymbol("ref"), Number::New(member.ref()));
+                jsmember->Set(String::NewSymbol("role"), String::New(member.role()));
+                members->Set(i, jsmember);
+                ++i;
+            }
+            obj->Set(String::NewSymbol("members"), members);
+
+            Local<Value> argv[argc] = { obj };
+            relation_cb->Call(Context::GetCurrent()->Global(), argc, argv);
         }
     }
 
@@ -122,6 +170,7 @@ public:
     }
     Persistent<Function> node_cb;
     Persistent<Function> way_cb;
+    Persistent<Function> relation_cb;
     Persistent<Function> done_cb;
 private:
     ~JSHandler();
@@ -154,6 +203,9 @@ JSHandler::~JSHandler()
     }
     if (!way_cb.IsEmpty()) {
         way_cb.Dispose();
+    }
+    if (!relation_cb.IsEmpty()) {
+        relation_cb.Dispose();
     }
 }
 
@@ -195,7 +247,15 @@ Handle<Value> JSHandler::on(Arguments const& args)
         }
         handler->node_cb = Persistent<Function>::New(callback);
     } else if (callback_name == String::NewSymbol("way")) {
+        if (!handler->way_cb.IsEmpty()) {
+            handler->way_cb.Dispose();
+        }
         handler->way_cb = Persistent<Function>::New(callback);
+    } else if (callback_name == String::NewSymbol("relation")) {
+        if (!handler->relation_cb.IsEmpty()) {
+            handler->relation_cb.Dispose();
+        }
+        handler->relation_cb = Persistent<Function>::New(callback);
     } else if (callback_name == String::NewSymbol("done")) {
         if (!handler->done_cb.IsEmpty()) {
             handler->done_cb.Dispose();
