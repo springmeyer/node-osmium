@@ -1,12 +1,10 @@
 
 var osmium = require('./lib/osmium.js');
-var fs = require('fs');
+var bw = require('buffered-writer');
 
-var stream = fs.createWriteStream("out.opl");
+stream = bw.open("out.opl");
 
 var handler = new osmium.Handler();
-
-var outbuffer = '';
 
 function obj2str(type, object) {
     return type + object.id + ' v' + object.version + ' dV c' + object.changeset + ' t' + object.timestamp_iso + ' i' + object.uid + ' u' + object.user;
@@ -20,16 +18,8 @@ function tags2str(tags) {
     return str.substring(0, str.length-1);
 }
 
-function flush_buffer() {
-    stream.write(outbuffer);
-    outbuffer = '';
-}
-
 handler.on('node', function(node) {
-    outbuffer += obj2str('n', node) + ' x' + node.lon + ' y' + node.lat + ' T' + tags2str(node.tags) + "\n";
-    if (outbuffer.length > 10000) {
-        flush_buffer();
-    }
+    stream.write(obj2str('n', node) + ' x' + node.lon + ' y' + node.lat + ' T' + tags2str(node.tags) + "\n");
 });
 
 handler.on('way', function(way) {
@@ -37,10 +27,7 @@ handler.on('way', function(way) {
     for (var i=0; i < way.nodes.length; i+=1) {
         str += way.nodes[i] + ',';
     }
-    outbuffer += obj2str('w', way) + ' N' + str.substring(0, str.length-1) + ' T' + tags2str(way.tags) + "\n";
-    if (outbuffer.length > 10000) {
-        flush_buffer();
-    }
+    stream.write(obj2str('w', way) + ' N' + str.substring(0, str.length-1) + ' T' + tags2str(way.tags) + "\n");
 });
 
 handler.on('relation', function(relation) {
@@ -48,19 +35,16 @@ handler.on('relation', function(relation) {
     for (var i=0; i < relation.members.length; i+=1) {
         str += relation.members[i].type + relation.members[i].ref + '@' + relation.members[i].role + ',';
     }
-    outbuffer += obj2str('r', relation) + ' M' + str.substring(0, str.length-1) + ' T' + tags2str(relation.tags) + "\n";
-    if (outbuffer.length > 10000) {
-        flush_buffer();
-    }
+    stream.write(obj2str('r', relation) + ' M' + str.substring(0, str.length-1) + ' T' + tags2str(relation.tags) + "\n");
 });
 
 handler.on('done', function() {
-    stream.write(outbuffer);
-    stream.end();
+    stream.close();
 });
 
 var reader = new osmium.Reader("winthrop.osm");
 //var reader = new osmium.Reader("berlin-latest.osm.pbf");
 //var reader = new osmium.Reader("../bremen.osm.pbf");
+
 reader.apply(handler);
 
