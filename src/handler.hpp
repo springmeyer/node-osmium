@@ -39,6 +39,7 @@ public:
     void _unref() { Unref(); }
 
     void node(const osmium::Node& node) {
+        HandleScope scope;
         if (/*node.tags().begin() != node.tags().end() &&*/ !node_cb.IsEmpty()) {
             const int argc = 1;
             Local<Object> obj = Object::New();
@@ -72,11 +73,20 @@ public:
             obj->Set(String::NewSymbol("tags"), tags);
 
             Local<Value> argv[argc] = { obj };
-            node_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+
+            TryCatch trycatch;
+            Handle<Value> v = node_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+            if (v.IsEmpty()) {
+                Handle<Value> exception = trycatch.Exception();
+                String::AsciiValue exception_str(exception);
+                printf("Exception: %s\n", *exception_str);
+                exit(1);
+            }
         }
     }
 
     void way(const osmium::Way& way) {
+        HandleScope scope;
         if (!way_cb.IsEmpty()) {
             const int argc = 1;
             Local<Object> obj = Object::New();
@@ -120,11 +130,20 @@ public:
             obj->Set(String::NewSymbol("nodes"), nodes);
 
             Local<Value> argv[argc] = { obj };
-            way_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+
+            TryCatch trycatch;
+            Handle<Value> v = way_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+            if (v.IsEmpty()) {
+                Handle<Value> exception = trycatch.Exception();
+                String::AsciiValue exception_str(exception);
+                printf("Exception: %s\n", *exception_str);
+                exit(1);
+            }
         }
     }
 
     void relation(const osmium::Relation& relation) {
+        HandleScope scope;
         if (!relation_cb.IsEmpty()) {
             const int argc = 1;
             Local<Object> obj = Object::New();
@@ -158,7 +177,15 @@ public:
             obj->Set(String::NewSymbol("members"), members);
 
             Local<Value> argv[argc] = { obj };
-            relation_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+
+            TryCatch trycatch;
+            Handle<Value> v = relation_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+            if (v.IsEmpty()) {
+                Handle<Value> exception = trycatch.Exception();
+                String::AsciiValue exception_str(exception);
+                printf("Exception: %s\n", *exception_str);
+                exit(1);
+            }
         }
     }
 
