@@ -5,13 +5,14 @@
 #include <node.h>
 #include <node_version.h>
 #include <node_object_wrap.h>
-
-//#include "reader.hpp"
+#include <node_buffer.h>
 
 // osmium
 #include <osmium/handler/node_locations_for_ways.hpp> // Handler
 #include <osmium/index/map/dummy.hpp>
-#include <osmium/index/map/stl_map.hpp>
+#include <osmium/index/map/sparse_table.hpp>
+#include <osmium/geom/wkb.hpp>
+#include <osmium/geom/wkt.hpp>
 
 // c++11
 #include <memory>
@@ -24,7 +25,7 @@ using namespace v8;
 // interfaces
 
 typedef osmium::index::map::Dummy<osmium::unsigned_object_id_type, osmium::Location> index_neg_type;
-typedef osmium::index::map::StlMap<osmium::unsigned_object_id_type, osmium::Location> index_pos_type;
+typedef osmium::index::map::SparseTable<osmium::unsigned_object_id_type, osmium::Location> index_pos_type;
 typedef osmium::handler::NodeLocationsForWays<index_pos_type, index_neg_type> location_handler_type;
 
 class JSHandler: public node::ObjectWrap , public osmium::handler::Handler<JSHandler> {
@@ -36,12 +37,83 @@ public:
     JSHandler();
     void _ref() { Ref(); }
     void _unref() { Unref(); }
+
     void node(const osmium::Node& node) {
-        if (!node_cb.IsEmpty()) {
-            Local<Value> argv[0] = { };
-            node_cb->Call(Context::GetCurrent()->Global(), 0, argv);
+        if (/*node.tags().begin() != node.tags().end() &&*/ !node_cb.IsEmpty()) {
+            const int argc = 1;
+            Local<Object> obj = Object::New();
+            obj->Set(String::NewSymbol("id"), Number::New(node.id()));
+            obj->Set(String::NewSymbol("version"), Number::New(node.version()));
+            obj->Set(String::NewSymbol("timestamp"), Number::New(node.timestamp()));
+            std::string iso { node.timestamp().to_iso() };
+            obj->Set(String::NewSymbol("timestamp_iso"), String::New(iso.c_str()));
+            obj->Set(String::NewSymbol("uid"), Number::New(node.uid()));
+            obj->Set(String::NewSymbol("user"), String::New(node.user()));
+            obj->Set(String::NewSymbol("lon"), Number::New(node.lon()));
+            obj->Set(String::NewSymbol("lat"), Number::New(node.lat()));
+
+            {
+                osmium::geom::WKBFactory factory;
+                std::string wkb { factory.create_point(node) };
+                obj->Set(String::NewSymbol("wkb"), node::Buffer::New(wkb.data(), wkb.size())->handle_);
+            }
+
+            {
+                osmium::geom::WKTFactory factory;
+                std::string wkt { factory.create_point(node) };
+                obj->Set(String::NewSymbol("wkt"), String::New(wkt.c_str()));
+            }
+
+            Local<Object> tags = Object::New();
+            for (auto& tag : node.tags()) {
+                tags->Set(String::NewSymbol(tag.key()), String::New(tag.value()));
+            }
+            obj->Set(String::NewSymbol("tags"), tags);
+
+            Local<Value> argv[argc] = { obj };
+            node_cb->Call(Context::GetCurrent()->Global(), argc, argv);
         }
     }
+
+    void way(const osmium::Way& way) {
+        if (!way_cb.IsEmpty()) {
+            const int argc = 1;
+            Local<Object> obj = Object::New();
+            obj->Set(String::NewSymbol("id"), Number::New(way.id()));
+            obj->Set(String::NewSymbol("version"), Number::New(way.version()));
+            obj->Set(String::NewSymbol("timestamp"), Number::New(way.timestamp()));
+            std::string iso { way.timestamp().to_iso() };
+            obj->Set(String::NewSymbol("timestamp_iso"), String::New(iso.c_str()));
+            obj->Set(String::NewSymbol("uid"), Number::New(way.uid()));
+            obj->Set(String::NewSymbol("user"), String::New(way.user()));
+
+            try {
+                osmium::geom::WKBFactory factory;
+                std::string wkb { factory.create_linestring(way) };
+                obj->Set(String::NewSymbol("wkb"), node::Buffer::New(wkb.data(), wkb.size())->handle_);
+            } catch (osmium::geom::geometry_error&) {
+                obj->Set(String::NewSymbol("wkb"), Undefined());
+            }
+
+            try {
+                osmium::geom::WKTFactory factory;
+                std::string wkt { factory.create_linestring(way) };
+                obj->Set(String::NewSymbol("wkt"), String::New(wkt.c_str()));
+            } catch (osmium::geom::geometry_error&) {
+                obj->Set(String::NewSymbol("wkt"), Undefined());
+            }
+
+            Local<Object> tags = Object::New();
+            for (auto& tag : way.tags()) {
+                tags->Set(String::NewSymbol(tag.key()), String::New(tag.value()));
+            }
+            obj->Set(String::NewSymbol("tags"), tags);
+
+            Local<Value> argv[argc] = { obj };
+            way_cb->Call(Context::GetCurrent()->Global(), argc, argv);
+        }
+    }
+
     void done() {
         if (!done_cb.IsEmpty()) {
             Local<Value> argv[0] = { };
@@ -49,6 +121,7 @@ public:
         }
     }
     Persistent<Function> node_cb;
+    Persistent<Function> way_cb;
     Persistent<Function> done_cb;
 private:
     ~JSHandler();
@@ -78,6 +151,9 @@ JSHandler::~JSHandler()
     }
     if (!node_cb.IsEmpty()) {
         node_cb.Dispose();
+    }
+    if (!way_cb.IsEmpty()) {
+        way_cb.Dispose();
     }
 }
 
@@ -115,6 +191,8 @@ Handle<Value> JSHandler::on(Arguments const& args)
     JSHandler * handler = node::ObjectWrap::Unwrap<JSHandler>(args.This());
     if (callback_name == String::NewSymbol("node")) {
         handler->node_cb = Persistent<Function>::New(callback);
+    } else if (callback_name == String::NewSymbol("way")) {
+        handler->way_cb = Persistent<Function>::New(callback);
     } else if (callback_name == String::NewSymbol("done")) {
         handler->done_cb = Persistent<Function>::New(callback);
     }
