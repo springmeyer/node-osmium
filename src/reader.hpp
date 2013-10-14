@@ -51,7 +51,7 @@ void Reader::Initialize(Handle<Object> target) {
     constructor->SetClassName(String::NewSymbol("Reader"));
     NODE_SET_PROTOTYPE_METHOD(constructor, "header", header);
     NODE_SET_PROTOTYPE_METHOD(constructor, "apply", apply);
-    target->Set(String::NewSymbol("Reader"),constructor->GetFunction());
+    target->Set(String::NewSymbol("Reader"), constructor->GetFunction());
 }
 
 Reader::Reader(std::string const& infile)
@@ -91,7 +91,7 @@ Handle<Value> Reader::header(Arguments const& args)
     Local<Object> obj = Object::New();
     Reader* reader = node::ObjectWrap::Unwrap<Reader>(args.This());
     osmium::io::Header const& header = reader->header_;
-    obj->Set(String::NewSymbol("generator"),String::New(header.generator().c_str()));
+    obj->Set(String::NewSymbol("generator"), String::New(header.generator().c_str()));
     osmium::Bounds const& bounds = header.bounds();
     Local<Array> arr = Array::New(4);
     arr->Set(0,Number::New(bounds.bottom_left().lon()));
@@ -121,7 +121,7 @@ Handle<Value> Reader::apply(Arguments const& args)
     index_pos_type index_pos;
     index_neg_type index_neg;
     location_handler_type location_handler(index_pos, index_neg);
-    r_ptr->apply(location_handler,*handler);
+    r_ptr->apply(location_handler, *handler);
     return Undefined();
 }
 
