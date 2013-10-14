@@ -30,4 +30,32 @@ describe('osmium', function() {
         reader.apply(handler);
     });
 
+    it('should be able to get node data from handler parameter', function(done) {
+        var handler = new osmium.Handler();
+        var nodes = 0, ways = 0;
+        handler.on('node',function(node) {
+            if (nodes == 0) {
+                assert.equal(node.id, 50031066);
+                assert.equal(node.lon, -120.1891610);
+            }
+            if (nodes == 1) {
+                assert.equal(node.id, 50031085);
+                assert.equal(node.lon, -120.1929190);
+            }
+            ++nodes;
+        });
+        handler.on('way',function(way) {
+            if (ways == 0) {
+                assert.equal(way.id, 6091729);
+            }
+            ++ways;
+        });
+        handler.on('done',function() {
+            assert.equal(nodes,1525);
+            done();
+        });
+        var reader = new osmium.Reader("winthrop.osm");
+        reader.apply(handler);
+    });
+
 });
