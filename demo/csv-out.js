@@ -1,6 +1,11 @@
+#!/usr/bin/env node
 /*
 
  Reads OSM file and outputs some data for post boxes and highways.
+
+ Call as:
+
+ node csv-out.js OSMFILE OUTFILE
 
 */
 

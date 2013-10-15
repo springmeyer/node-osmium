@@ -1,6 +1,11 @@
+#!/usr/bin/env node
 /*
 
  Reads OSM file and outputs data in a format similar to OPL.
+
+ Call as:
+
+ node opl-out.js OSMFILE OUTFILE
 
 */
 
