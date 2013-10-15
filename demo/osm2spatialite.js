@@ -58,13 +58,9 @@ child.on('exit', function(code, signal) {
 
     var handler = new osmium.Handler();
 
-    var amenity_id = 0;
-    var highway_id = 0;
-
     handler.on('node', function(node) {
         if (node.tags['amenity'] == 'post_box') {
             add_amenity.run(node.id, node.tags['operator'], node.wkb); 
-            amenity_id += 1;
         }
     });
 
@@ -72,7 +68,6 @@ child.on('exit', function(code, signal) {
         if (way.tags['highway']) {
             if (way.wkt) {
                 add_highway.run(way.id, way.tags.highway, way.tags.name, way.wkb);
-                highway_id += 1;
             }
         }
     });
