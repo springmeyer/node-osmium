@@ -25,6 +25,7 @@ var stream = buffered_writer.open(output_filename);
 // =====================================
 
 var handler = new osmium.Handler();
+handler.options({ "tagged_nodes_only": true });
 
 handler.on('node', function(node) {
     if (node.tags.amenity == 'post_box') {

@@ -26,13 +26,14 @@ public:
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(Arguments const& args);
     static Handle<Value> on(Arguments const& args);
+    static Handle<Value> options(Arguments const& args);
     JSHandler();
     void _ref() { Ref(); }
     void _unref() { Unref(); }
 
     void node(const osmium::Node& node) {
         HandleScope scope;
-        if (/*node.tags().begin() != node.tags().end() &&*/ !node_cb.IsEmpty()) {
+        if (!node_cb.IsEmpty() && (!node_callback_for_tagged_only || !node.tags().empty())) {
             const int argc = 1;
             Local<Object> obj = Object::New();
             obj->Set(String::NewSymbol("id"), Number::New(node.id()));
@@ -186,6 +187,8 @@ public:
             done_cb->Call(Context::GetCurrent()->Global(), 0, argv);
         }
     }
+
+    bool node_callback_for_tagged_only;
     Persistent<Function> node_cb;
     Persistent<Function> way_cb;
     Persistent<Function> relation_cb;
@@ -204,11 +207,13 @@ void JSHandler::Initialize(Handle<Object> target) {
     constructor->InstanceTemplate()->SetInternalFieldCount(1);
     constructor->SetClassName(String::NewSymbol("Handler"));
     NODE_SET_PROTOTYPE_METHOD(constructor, "on", on);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "options", options);
     target->Set(String::NewSymbol("Handler"),constructor->GetFunction());
 }
 
 JSHandler::JSHandler()
   : ObjectWrap(),
+    node_callback_for_tagged_only(false),
     done_cb() {
       done_cb.Clear();
   }
@@ -245,6 +250,19 @@ Handle<Value> JSHandler::New(Arguments const& args)
         JSHandler* h = new JSHandler();
         h->Wrap(args.This());
         return args.This();
+    }
+    return Undefined();
+}
+
+Handle<Value> JSHandler::options(Arguments const& args) {
+    if (args.Length() == 1) {
+        if (args[0]->IsObject()) {
+            Local<Value> tagged_nodes_only = args[0]->ToObject()->Get(String::NewSymbol("tagged_nodes_only"));
+            if (tagged_nodes_only->IsBoolean()) {
+                JSHandler* handler = node::ObjectWrap::Unwrap<JSHandler>(args.This());
+                handler->node_callback_for_tagged_only = tagged_nodes_only->BooleanValue();
+            }
+        }
     }
     return Undefined();
 }
