@@ -110,7 +110,8 @@ Handle<Value> Reader::header(Arguments const& args)
 Handle<Value> Reader::apply(Arguments const& args)
 {
     HandleScope scope;
-    if (args.Length() != 1) {
+
+    if (args.Length() != 1 && args.Length() != 2) {
         return ThrowException(Exception::TypeError(String::New("please provide a single handler object")));
     }
     if (!args[0]->IsObject()) {
@@ -120,13 +121,32 @@ Handle<Value> Reader::apply(Arguments const& args)
     if (obj->IsNull() || obj->IsUndefined() || !JSHandler::constructor->HasInstance(obj)){
         return ThrowException(Exception::TypeError(String::New("please provide a valid handler object")));
     }
+
+    bool with_location_handler = false;
+
+    if (args.Length() == 2) {
+        if (!args[1]->IsObject()) {
+            return ThrowException(Exception::TypeError(String::New("second argument must be 'option' object")));
+        }
+        Local<Value> wlh = args[1]->ToObject()->Get(String::NewSymbol("with_location_handler"));
+        if (wlh->BooleanValue()) {
+            with_location_handler = true;
+        }
+    }
+
     JSHandler *handler = node::ObjectWrap::Unwrap<JSHandler>(obj);
     Reader* reader = node::ObjectWrap::Unwrap<Reader>(args.This());
     reader_ptr r_ptr = reader->get();
-    index_pos_type index_pos;
-    index_neg_type index_neg;
-    location_handler_type location_handler(index_pos, index_neg);
-    r_ptr->apply(location_handler, *handler);
+
+    if (with_location_handler) {
+        index_pos_type index_pos;
+        index_neg_type index_neg;
+        location_handler_type location_handler(index_pos, index_neg);
+        r_ptr->apply(location_handler, *handler);
+    } else {
+        r_ptr->apply(*handler);
+    }
+
     return Undefined();
 }
 

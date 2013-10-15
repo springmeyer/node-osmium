@@ -45,5 +45,5 @@ handler.on('done', function() {
 });
 
 var reader = new osmium.Reader(input_filename);
-reader.apply(handler);
+reader.apply(handler, { "with_location_handler": true });
 
