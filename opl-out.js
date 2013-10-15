@@ -2,7 +2,7 @@
 var osmium = require('./lib/osmium.js');
 var bw = require('buffered-writer');
 
-stream = bw.open("out.opl");
+var stream = bw.open("out.opl");
 
 var handler = new osmium.Handler();
 
