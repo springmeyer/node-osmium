@@ -37,6 +37,7 @@ public:
             Local<Object> obj = Object::New();
             obj->Set(String::NewSymbol("id"), Number::New(node.id()));
             obj->Set(String::NewSymbol("version"), Number::New(node.version()));
+            obj->Set(String::NewSymbol("visible"), Boolean::New(node.visible()));
             obj->Set(String::NewSymbol("changeset"), Number::New(node.changeset()));
             obj->Set(String::NewSymbol("timestamp"), Number::New(node.timestamp()));
             std::string iso { node.timestamp().to_iso() };
@@ -82,6 +83,7 @@ public:
             Local<Object> obj = Object::New();
             obj->Set(String::NewSymbol("id"), Number::New(way.id()));
             obj->Set(String::NewSymbol("version"), Number::New(way.version()));
+            obj->Set(String::NewSymbol("visible"), Boolean::New(way.visible()));
             obj->Set(String::NewSymbol("changeset"), Number::New(way.changeset()));
             obj->Set(String::NewSymbol("timestamp"), Number::New(way.timestamp()));
             std::string iso { way.timestamp().to_iso() };
@@ -137,6 +139,7 @@ public:
             Local<Object> obj = Object::New();
             obj->Set(String::NewSymbol("id"), Number::New(relation.id()));
             obj->Set(String::NewSymbol("version"), Number::New(relation.version()));
+            obj->Set(String::NewSymbol("visible"), Boolean::New(relation.visible()));
             obj->Set(String::NewSymbol("changeset"), Number::New(relation.changeset()));
             obj->Set(String::NewSymbol("timestamp"), Number::New(relation.timestamp()));
             std::string iso { relation.timestamp().to_iso() };
