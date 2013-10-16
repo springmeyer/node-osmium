@@ -7,7 +7,7 @@ Node.js bindings to [libosmium](https://github.com/osmcode/libosmium).
 
  - Compiler that supports `-std=c++11` (>= clang++ 3.2 || >= g++ 4.8)
  - Node.js v0.10.x (might work with v0.8.x)
- - Boost >= 1.54 with development headers
+ - Boost >= 1.49 with development headers
  - OSM-Binary
  - Protocol buffers
  - zlib
