@@ -1,4 +1,4 @@
-var osmium = require('osmium');
+var osmium = require('../');
 var assert = require('assert');
 
 describe('osmium', function() {
