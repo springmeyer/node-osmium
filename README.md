@@ -12,7 +12,7 @@ Node.js bindings to [libosmium](https://github.com/osmcode/libosmium).
  - Protocol buffers
  - zlib
 
-Set these up on Ubuntu Precise (12.04) like:
+Set depedencies up on Ubuntu Precise (12.04) like:
 
     echo 'yes' | sudo apt-add-repository ppa:chris-lea/node.js
     echo 'yes' | sudo apt-add-repository ppa:chris-lea/protobuf
@@ -24,6 +24,23 @@ Set these up on Ubuntu Precise (12.04) like:
     cd OSM-binary/src
     make && sudo make install
 
+Set depedencies up on OS X like:
+
+git clone https://github.com/mapnik/mapnik-packaging.git
+cd mapnik-packaging/osx
+# open the settings and make `export CXX11=true`
+export CXX11=true
+source MacOSX.sh
+./scripts/download_deps.sh
+./scripts/build_google_sparsetable.sh
+./scripts/build_icu.sh
+./scripts/build_boost.sh
+./scripts/build_protobuf.sh
+./scripts/build_node.sh
+./scripts/build_osm-pbf.sh
+# NOTE: in the same terminal then run the build commands
+# Or from a different terminal re-run `source MacOSX.sh`
+
 # Building
 
 To build the bindings:
@@ -32,9 +49,6 @@ To build the bindings:
     cd libosmium
     git clone https://github.com/springmeyer/node-osmium.git
     cd node-osmium
-    # set include/lib paths to osmium depedencies
-    export CXXFLAGS="-I/opt/boost-trunk/include"
-    export LDFLAGS="-L/opt/boost-trunk/lib"
     npm install
 
 # Testing
@@ -45,6 +59,11 @@ Run the tests like:
     make test
 
 # Troubleshooting
+
+If you hit a test error like the below it means you need to run `make test` instead of just `npm test` so that the test data is downloaded:
+
+    1) osmium should be able to create an osmium.Reader:
+         TypeError: Open failed
 
 If you hit an error like the below it means you need a more recent compiler that implements the C++11 language standard
 
