@@ -26,20 +26,20 @@ Set depedencies up on Ubuntu Precise (12.04) like:
 
 Set depedencies up on OS X like:
 
-git clone https://github.com/mapnik/mapnik-packaging.git
-cd mapnik-packaging/osx
-# open the settings and make `export CXX11=true`
-export CXX11=true
-source MacOSX.sh
-./scripts/download_deps.sh
-./scripts/build_google_sparsetable.sh
-./scripts/build_icu.sh
-./scripts/build_boost.sh
-./scripts/build_protobuf.sh
-./scripts/build_node.sh
-./scripts/build_osm-pbf.sh
-# NOTE: in the same terminal then run the build commands
-# Or from a different terminal re-run `source MacOSX.sh`
+    git clone https://github.com/mapnik/mapnik-packaging.git
+    cd mapnik-packaging/osx
+    # open the settings and make `export CXX11=true`
+    export CXX11=true
+    source MacOSX.sh
+    ./scripts/download_deps.sh
+    ./scripts/build_google_sparsetable.sh
+    ./scripts/build_icu.sh
+    ./scripts/build_boost.sh
+    ./scripts/build_protobuf.sh
+    ./scripts/build_node.sh
+    ./scripts/build_osm-pbf.sh
+    # NOTE: in the same terminal then run the build commands
+    # Or from a different terminal re-run `source MacOSX.sh`
 
 # Building
 
