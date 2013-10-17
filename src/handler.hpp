@@ -50,7 +50,11 @@ public:
 
             {
                 std::string wkb { wkb_factory.create_point(node) };
+                #if NODE_VERSION_AT_LEAST(0, 10, 0)
                 obj->Set(String::NewSymbol("wkb"), node::Buffer::New(wkb.data(), wkb.size())->handle_);
+                #else
+                obj->Set(String::NewSymbol("wkb"), node::Buffer::New(const_cast<char*>(wkb.data()), wkb.size())->handle_);
+                #endif
             }
 
             {
@@ -94,7 +98,11 @@ public:
 
             try {
                 std::string wkb { wkb_factory.create_linestring(way) };
+                #if NODE_VERSION_AT_LEAST(0, 10, 0)
                 obj->Set(String::NewSymbol("wkb"), node::Buffer::New(wkb.data(), wkb.size())->handle_);
+                #else
+                obj->Set(String::NewSymbol("wkb"), node::Buffer::New(const_cast<char*>(wkb.data()), wkb.size())->handle_);
+                #endif
             } catch (osmium::geom::geometry_error&) {
                 obj->Set(String::NewSymbol("wkb"), Undefined());
             }
