@@ -17,4 +17,6 @@ before_install:
 before_script: "npm install mocha"
 
 script:
+ - cd ../ && git clone https://github.com/osmcode/libosmium.git
+ - echo `pwd`
  - CXX=g++-4.7 npm install
