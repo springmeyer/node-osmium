@@ -14,12 +14,13 @@ Node.js bindings to [libosmium](https://github.com/osmcode/libosmium).
 
 Set depedencies up on Ubuntu Precise (12.04) like:
 
-    echo 'yes' | sudo apt-add-repository ppa:chris-lea/node.js
-    echo 'yes' | sudo apt-add-repository ppa:chris-lea/protobuf
-    echo 'yes' | sudo apt-add-repository ppa:mapnik/boost
-    echo 'yes' | sudo apt-add-repository ppa:ubuntu-toolchain-r/test
+    sudo apt-add-repository --yes ppa:chris-lea/node.js
+    sudo apt-add-repository --yes ppa:mapnik/boost
+    sudo apt-add-repository --yes ppa:ubuntu-toolchain-r/test
     sudo apt-get -y update
-    sudo apt-get -y install git gcc-4.7 g++-4.7 build-essential nodejs libboost-dev zlib1g-dev protobuf-compiler libprotobuf-lite7 libprotobuf-dev libexpat1-dev
+    sudo apt-get -y install git gcc-4.7 g++-4.7 build-essential nodejs libboost-dev zlib1g-dev protobuf-compiler libprotobuf-lite7 libprotobuf-dev libexpat1-dev libsparsehash-dev
+    export CC=gcc-4.7
+    export CXX=g++-4.7
     git clone https://github.com/scrosby/OSM-binary.git
     cd OSM-binary/src
     make && sudo make install
