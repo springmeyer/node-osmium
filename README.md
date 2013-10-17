@@ -2,6 +2,7 @@
 
 Node.js bindings to [libosmium](https://github.com/osmcode/libosmium).
 
+[![Build Status](https://secure.travis-ci.org/springmeyer/node-osmium.png)](http://travis-ci.org/springmeyer/node-osmium)
 
 # Depends
 
