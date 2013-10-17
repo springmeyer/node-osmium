@@ -16,7 +16,11 @@ before_install:
  - cd ../../
  - git clone https://github.com/osmcode/libosmium.git
 
-before_script: "npm install mocha"
+install:
+ - npm install mocha
+
+before_script:
+ - CXX=g++-4.7 npm install
 
 script:
- - CXX=g++-4.7 npm install
+ - make test
