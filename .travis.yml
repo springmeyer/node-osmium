@@ -20,7 +20,9 @@ install:
  - npm install mocha
 
 before_script:
- - CXX=g++-4.7 npm install
+ - echo `pwd`
+ - ls -l ../
+ - CXX=g++-4.7 npm install --verbose
 
 script:
  - make test
