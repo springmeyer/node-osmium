@@ -17,7 +17,7 @@ geojsonOut.pipe(fileOut);
 //
 //     node osmium_geojsonstream.js.js | geojsonio
 //
-geojsonOut.pipe(process.stdout);
+//geojsonOut.pipe(process.stdout);
 var handler = new osmium.Handler();
 var nodes = 0;
  
