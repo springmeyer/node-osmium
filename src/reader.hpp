@@ -8,8 +8,9 @@
 
 // osmium
 #include <osmium/io/any_input.hpp> // bring in XML and PBF support
-#include <osmium/io/input.hpp> // Reader
-#include <osmium/handler/node_locations_for_ways.hpp> // Handler
+#include <osmium/io/reader.hpp>
+#include <osmium/visitor.hpp>
+#include <osmium/handler/node_locations_for_ways.hpp>
 #include <osmium/index/map/dummy.hpp>
 #include <osmium/index/map/stl_map.hpp>
 #include <osmium/index/map/sparse_table.hpp>
@@ -35,7 +36,8 @@ public:
     static Handle<Value> New(Arguments const& args);
     static Handle<Value> header(Arguments const& args);
     static Handle<Value> apply(Arguments const& args);
-    Reader(std::string const& infile);
+    static Handle<Value> close(Arguments const& args);
+    Reader(osmium::io::File& infile);
     void _ref() { Ref(); }
     void _unref() { Unref(); }
     inline reader_ptr get() { return this_; }
@@ -56,13 +58,14 @@ void Reader::Initialize(Handle<Object> target) {
     constructor->SetClassName(String::NewSymbol("Reader"));
     NODE_SET_PROTOTYPE_METHOD(constructor, "header", header);
     NODE_SET_PROTOTYPE_METHOD(constructor, "apply", apply);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "close", close);
     target->Set(String::NewSymbol("Reader"), constructor->GetFunction());
 }
 
-Reader::Reader(std::string const& infile)
+Reader::Reader(osmium::io::File& infile)
   : ObjectWrap(),
     this_(std::make_shared<osmium::io::Reader>(infile)),
-    header_(this_->open()) { }
+    header_(this_->header()) { }
 
 Reader::~Reader() { }
 
@@ -77,7 +80,8 @@ Handle<Value> Reader::New(Arguments const& args)
             if (!args[0]->IsString()) {
                 return ThrowException(Exception::TypeError(String::New("first argument must be a string")));
             }
-            Reader* q = new Reader(*String::Utf8Value(args[0]));
+            osmium::io::File file(*String::Utf8Value(args[0]));
+            Reader* q = new Reader(file);
             q->Wrap(args.This());
             return args.This();
         } else {
@@ -96,8 +100,8 @@ Handle<Value> Reader::header(Arguments const& args)
     Local<Object> obj = Object::New();
     Reader* reader = node::ObjectWrap::Unwrap<Reader>(args.This());
     osmium::io::Header const& header = reader->header_;
-    obj->Set(String::NewSymbol("generator"), String::New(header.generator().c_str()));
-    osmium::Bounds const& bounds = header.bounds();
+    obj->Set(String::NewSymbol("generator"), String::New(header.get("generator").c_str()));
+    osmium::BBox const& bounds = header.bbox();
     Local<Array> arr = Array::New(4);
     arr->Set(0,Number::New(bounds.bottom_left().lon()));
     arr->Set(1,Number::New(bounds.bottom_left().lat()));
@@ -142,11 +146,19 @@ Handle<Value> Reader::apply(Arguments const& args)
         index_pos_type index_pos;
         index_neg_type index_neg;
         location_handler_type location_handler(index_pos, index_neg);
-        r_ptr->apply(location_handler, *handler);
+        osmium::apply(*r_ptr, location_handler, *handler);
     } else {
-        r_ptr->apply(*handler);
+        osmium::apply(*r_ptr, *handler);
     }
 
+    return Undefined();
+}
+
+Handle<Value> Reader::close(Arguments const& args) {
+    HandleScope scope;
+    Reader* reader = node::ObjectWrap::Unwrap<Reader>(args.This());
+    reader_ptr r_ptr = reader->get();
+    r_ptr->close();
     return Undefined();
 }
 

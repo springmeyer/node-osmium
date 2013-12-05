@@ -30,7 +30,8 @@
           '-losmpbf',
           '-lprotobuf-lite',
           '-lexpat',
-          '-lz'
+          '-lz',
+          '-lbz2'
       ]
     },
     {

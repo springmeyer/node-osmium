@@ -9,6 +9,7 @@
 
 // osmium
 #include <osmium/handler.hpp>
+#include <osmium/osm.hpp>
 #include <osmium/geom/wkb.hpp>
 #include <osmium/geom/wkt.hpp>
 
@@ -20,8 +21,10 @@ namespace node_osmium {
 
 using namespace v8;
 
-class JSHandler: public node::ObjectWrap , public osmium::handler::Handler<JSHandler> {
+class JSHandler : public node::ObjectWrap, public osmium::handler::Handler {
+
 public:
+
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(Arguments const& args);
@@ -201,7 +204,9 @@ public:
     Persistent<Function> way_cb;
     Persistent<Function> relation_cb;
     Persistent<Function> done_cb;
+
 private:
+
     ~JSHandler();
     osmium::geom::WKBFactory wkb_factory;
     osmium::geom::WKTFactory wkt_factory;

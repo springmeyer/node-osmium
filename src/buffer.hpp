@@ -9,6 +9,7 @@
 // osmium
 #include <osmium/memory/buffer.hpp>
 #include <osmium/osm/dump.hpp>
+#include <osmium/visitor.hpp>
 
 using namespace v8;
 
@@ -72,7 +73,7 @@ Handle<Value> Buffer::dump(Arguments const& args)
     Buffer* b = node::ObjectWrap::Unwrap<Buffer>(args.This());
     std::ostringstream ss;
     osmium::osm::Dump dump(ss);
-    osmium::osm::apply_visitor(dump, b->buf);
+    osmium::apply(b->buf, dump);
     Local<String> obj = String::New(ss.str().c_str());
     return scope.Close(obj);
 }

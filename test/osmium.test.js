@@ -13,6 +13,7 @@ describe('osmium', function() {
         assert.ok(Math.abs(bounds[1] - expected[1]) < .000000001);
         assert.ok(Math.abs(bounds[2] - expected[2]) < .000000001);
         assert.ok(Math.abs(bounds[3] - expected[3]) < .000000001);
+        reader.close();
         done();
     });
 
