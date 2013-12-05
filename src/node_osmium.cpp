@@ -6,6 +6,7 @@
 
 // node-osmium
 #include "handler.hpp"
+#include "file.hpp"
 #include "reader.hpp"
 #include "buffer.hpp"
 
@@ -16,6 +17,7 @@ extern "C" {
         v8::HandleScope scope;
         node_osmium::JSHandler::Initialize(target);
         node_osmium::Buffer::Initialize(target);
+        node_osmium::File::Initialize(target);
         node_osmium::Reader::Initialize(target);
     }
 }

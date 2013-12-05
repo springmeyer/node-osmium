@@ -62,9 +62,9 @@ void Reader::Initialize(Handle<Object> target) {
     target->Set(String::NewSymbol("Reader"), constructor->GetFunction());
 }
 
-Reader::Reader(osmium::io::File& infile)
+Reader::Reader(osmium::io::File& file)
   : ObjectWrap(),
-    this_(std::make_shared<osmium::io::Reader>(infile)),
+    this_(std::make_shared<osmium::io::Reader>(file)),
     header_(this_->header()) { }
 
 Reader::~Reader() { }
@@ -77,15 +77,22 @@ Handle<Value> Reader::New(Arguments const& args)
     }
     try {
         if (args.Length() == 1) {
-            if (!args[0]->IsString()) {
-                return ThrowException(Exception::TypeError(String::New("first argument must be a string")));
+            if (args[0]->IsString()) {
+                osmium::io::File file(*String::Utf8Value(args[0]));
+                Reader* q = new Reader(file);
+                q->Wrap(args.This());
+                return args.This();
+            } else if (args[0]->IsObject() && File::constructor->HasInstance(args[0]->ToObject())) {
+                Local<Object> file_obj = args[0]->ToObject();
+                File* file_wrap = node::ObjectWrap::Unwrap<File>(file_obj);
+                Reader* q = new Reader(*(file_wrap->get()));
+                q->Wrap(args.This());
+                return args.This();
+            } else {
+                return ThrowException(Exception::TypeError(String::New("please provide a File object or string for the first argument when creating a Reader")));
             }
-            osmium::io::File file(*String::Utf8Value(args[0]));
-            Reader* q = new Reader(file);
-            q->Wrap(args.This());
-            return args.This();
         } else {
-            return ThrowException(Exception::TypeError(String::New("please provide an object of options for the first argument")));
+            return ThrowException(Exception::TypeError(String::New("please provide a File object or string for the first argument when creating a Reader")));
         }
     } catch (std::exception const& ex) {
         return ThrowException(Exception::TypeError(String::New(ex.what())));
