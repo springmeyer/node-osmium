@@ -5,7 +5,7 @@ describe('osmium', function() {
 
     it('should be able to create an osmium.Reader', function(done) {
         var file = new osmium.File("berlin-latest.osm.pbf");
-        var reader = new osmium.Reader(file);
+        var reader = new osmium.Reader(file, {});
         var header = reader.header();
         assert.equal(header.generator, 'Osmium (http://wiki.openstreetmap.org/wiki/Osmium)');
         var bounds = header.bounds;
@@ -66,7 +66,7 @@ describe('osmium', function() {
             assert.equal(nodes,1525);
             done();
         });
-        var reader = new osmium.Reader("winthrop.osm");
+        var reader = new osmium.Reader("winthrop.osm", { 'node': true, 'way': true });
         reader.apply(handler);
     });
 

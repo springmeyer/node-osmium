@@ -37,7 +37,7 @@ public:
     static Handle<Value> header(Arguments const& args);
     static Handle<Value> apply(Arguments const& args);
     static Handle<Value> close(Arguments const& args);
-    Reader(osmium::io::File& infile);
+    Reader(osmium::io::File& infile, osmium::osm_entity::flags entities);
     void _ref() { Ref(); }
     void _unref() { Unref(); }
     inline reader_ptr get() { return this_; }
@@ -62,9 +62,9 @@ void Reader::Initialize(Handle<Object> target) {
     target->Set(String::NewSymbol("Reader"), constructor->GetFunction());
 }
 
-Reader::Reader(osmium::io::File& file)
+Reader::Reader(osmium::io::File& file, osmium::osm_entity::flags entities)
   : ObjectWrap(),
-    this_(std::make_shared<osmium::io::Reader>(file)),
+    this_(std::make_shared<osmium::io::Reader>(file, entities)),
     header_(this_->header()) { }
 
 Reader::~Reader() { }
@@ -75,22 +75,45 @@ Handle<Value> Reader::New(Arguments const& args)
     if (!args.IsConstructCall()) {
         return ThrowException(Exception::Error(String::New("Cannot call constructor as function, you need to use 'new' keyword")));
     }
+    if (args.Length() < 1 || args.Length() > 2) {
+        return ThrowException(Exception::TypeError(String::New("please provide a File object or string for the first argument and optional options Object when creating a Reader")));
+    }
     try {
-        if (args.Length() == 1) {
-            if (args[0]->IsString()) {
-                osmium::io::File file(*String::Utf8Value(args[0]));
-                Reader* q = new Reader(file);
-                q->Wrap(args.This());
-                return args.This();
-            } else if (args[0]->IsObject() && File::constructor->HasInstance(args[0]->ToObject())) {
-                Local<Object> file_obj = args[0]->ToObject();
-                File* file_wrap = node::ObjectWrap::Unwrap<File>(file_obj);
-                Reader* q = new Reader(*(file_wrap->get()));
-                q->Wrap(args.This());
-                return args.This();
-            } else {
-                return ThrowException(Exception::TypeError(String::New("please provide a File object or string for the first argument when creating a Reader")));
+        osmium::osm_entity::flags read_which_entities = osmium::osm_entity::flags::all;
+        if (args.Length() == 2) {
+            if (!args[1]->IsObject()) {
+                return ThrowException(Exception::TypeError(String::New("Second argument to Reader constructor must be object")));
             }
+            read_which_entities = osmium::osm_entity::flags::nothing;
+            Local<Object> options = args[1]->ToObject();
+
+            Local<Value> want_nodes = options->Get(String::NewSymbol("node"));
+            if (want_nodes->IsBoolean() && want_nodes->BooleanValue()) {
+                read_which_entities |= osmium::osm_entity::flags::node;
+            }
+
+            Local<Value> want_ways = options->Get(String::NewSymbol("way"));
+            if (want_ways->IsBoolean() && want_ways->BooleanValue()) {
+                read_which_entities |= osmium::osm_entity::flags::way;
+            }
+
+            Local<Value> want_relations = options->Get(String::NewSymbol("relation"));
+            if (want_relations->IsBoolean() && want_relations->BooleanValue()) {
+                read_which_entities |= osmium::osm_entity::flags::relation;
+            }
+
+        }
+        if (args[0]->IsString()) {
+            osmium::io::File file(*String::Utf8Value(args[0]));
+            Reader* q = new Reader(file, read_which_entities);
+            q->Wrap(args.This());
+            return args.This();
+        } else if (args[0]->IsObject() && File::constructor->HasInstance(args[0]->ToObject())) {
+            Local<Object> file_obj = args[0]->ToObject();
+            File* file_wrap = node::ObjectWrap::Unwrap<File>(file_obj);
+            Reader* q = new Reader(*(file_wrap->get()), read_which_entities);
+            q->Wrap(args.This());
+            return args.This();
         } else {
             return ThrowException(Exception::TypeError(String::New("please provide a File object or string for the first argument when creating a Reader")));
         }
