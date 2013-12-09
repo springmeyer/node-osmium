@@ -131,7 +131,7 @@ Handle<Value> Reader::header(Arguments const& args)
     Reader* reader = node::ObjectWrap::Unwrap<Reader>(args.This());
     osmium::io::Header const& header = reader->header_;
     obj->Set(String::NewSymbol("generator"), String::New(header.get("generator").c_str()));
-    osmium::BBox const& bounds = header.bbox();
+    osmium::Box const& bounds = header.box();
     Local<Array> arr = Array::New(4);
     arr->Set(0,Number::New(bounds.bottom_left().lon()));
     arr->Set(1,Number::New(bounds.bottom_left().lat()));
